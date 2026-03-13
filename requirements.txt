@@ -1,0 +1,33 @@
+# Core
+click>=8.0.0
+rich>=13.0.0
+python-dotenv>=1.0.0
+requests>=2.28.0
+
+# AI / ML
+google-genai>=1.0.0
+
+# Video / Image
+moviepy>=2.0.0
+opencv-python>=4.8.0
+Pillow>=10.0.0
+numpy>=1.24.0
+
+# Document processing
+python-pptx>=0.6.21
+pdf2image>=1.16.0
+
+# TTS (free fallback)
+edge-tts>=6.1.0
+
+# Music generation (optional engines)
+scipy>=1.10.0
+replicate>=0.20.0
+huggingface-hub>=0.20.0
+
+# Web crawling (storyboard)
+playwright>=1.40.0
+
+# Deployment (web UI)
+modal>=0.60.0
+fastapi>=0.100.0
