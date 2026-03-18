@@ -7,13 +7,15 @@ export default function DashboardLayout({
   children: React.ReactNode;
 }) {
   return (
-    <div className="min-h-screen bg-[#0f0f0f]">
-      <nav className="flex items-center justify-between px-8 py-4 border-b border-[#222]">
-        <Link
-          href="/"
-          className="text-xl font-bold bg-gradient-to-r from-orange-500 to-pink-500 bg-clip-text text-transparent"
-        >
-          VideoGen
+    <div className="min-h-screen bg-[#0c0c0c]">
+      <nav className="flex items-center justify-between px-8 py-4 border-b border-[#3d3428]">
+        <Link href="/" className="flex items-center gap-3">
+          <img src="/logo.png" alt="Transilience" className="h-7 w-auto" />
+          <span className="text-lg font-semibold text-[#f5f2ea]">Transilience</span>
+          <span className="text-[#333]">|</span>
+          <span className="text-lg font-bold bg-gradient-to-r from-[#f5da6a] to-[#d4b44e] bg-clip-text text-transparent">
+            VideoGen
+          </span>
         </Link>
         <UserButton />
       </nav>

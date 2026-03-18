@@ -3,7 +3,7 @@
 import { STYLES } from "@/lib/constants";
 import { sampleVideoUrl } from "@/lib/api";
 import type { VideoStyle } from "@/lib/types";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 
 interface Props {
   value: VideoStyle;
@@ -11,16 +11,6 @@ interface Props {
 }
 
 export default function StylePicker({ value, onChange }: Props) {
-  const [sampleAvail, setSampleAvail] = useState<Record<string, boolean>>({});
-
-  useEffect(() => {
-    STYLES.forEach(({ id }) => {
-      fetch(sampleVideoUrl(id), { method: "HEAD" })
-        .then((r) => setSampleAvail((prev) => ({ ...prev, [id]: r.ok })))
-        .catch(() => {});
-    });
-  }, []);
-
   return (
     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
       {STYLES.map((s) => (
@@ -31,7 +21,6 @@ export default function StylePicker({ value, onChange }: Props) {
           description={s.description}
           icon={s.icon}
           selected={value === s.id}
-          hasSample={!!sampleAvail[s.id]}
           onClick={() => onChange(s.id)}
         />
       ))}
@@ -45,7 +34,6 @@ function StyleCard({
   description,
   icon,
   selected,
-  hasSample,
   onClick,
 }: {
   id: string;
@@ -53,7 +41,6 @@ function StyleCard({
   description: string;
   icon: string;
   selected: boolean;
-  hasSample: boolean;
   onClick: () => void;
 }) {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -64,12 +51,12 @@ function StyleCard({
       onClick={onClick}
       className={`relative cursor-pointer rounded-xl p-5 border transition ${
         selected
-          ? "border-orange-500 bg-orange-500/5"
-          : "border-[#333] bg-[#1a1a1a] hover:border-[#555]"
+          ? "border-[#d4b44e] bg-[#d4b44e]/5"
+          : "border-[#3d3428] bg-[#1a1814] hover:border-[#3d3428]"
       }`}
     >
       <svg
-        className="w-6 h-6 mb-3 text-orange-400"
+        className="w-6 h-6 mb-3 text-[#d4b44e]"
         fill="none"
         viewBox="0 0 24 24"
         stroke="currentColor"
@@ -77,22 +64,20 @@ function StyleCard({
       >
         <path strokeLinecap="round" strokeLinejoin="round" d={icon} />
       </svg>
-      <h3 className="font-semibold mb-1">{name}</h3>
-      <p className="text-xs text-gray-400">{description}</p>
+      <h3 className="font-semibold mb-1 text-[#f5f2ea]">{name}</h3>
+      <p className="text-xs text-[#a09888]">{description}</p>
 
-      {hasSample && (
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            setShowVideo(!showVideo);
-          }}
-          className="mt-3 text-xs text-orange-400 hover:text-orange-300 transition"
-        >
-          {showVideo ? "Hide Preview" : "Watch Sample"}
-        </button>
-      )}
+      <button
+        onClick={(e) => {
+          e.stopPropagation();
+          setShowVideo(!showVideo);
+        }}
+        className="mt-3 text-xs text-[#d4b44e] hover:text-[#e8c54d] transition"
+      >
+        {showVideo ? "Hide Preview" : "Watch Sample"}
+      </button>
 
-      {showVideo && hasSample && (
+      {showVideo && (
         <video
           ref={videoRef}
           src={sampleVideoUrl(id)}

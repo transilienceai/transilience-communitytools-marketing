@@ -1,7 +1,9 @@
 "use client";
 
+import { useEffect, useRef, useState } from "react";
 import type { JobResult } from "@/lib/types";
 import AvatarOverlay from "./avatar-overlay";
+import PostProcessing from "./post-processing";
 
 interface Props {
   jobId: string;
@@ -23,19 +25,11 @@ export default function ResultsPanel({
   return (
     <div className="space-y-6">
       {/* Video Player */}
-      <div className="bg-[#161616] border border-[#222] rounded-xl p-6">
-        <h2 className="text-lg font-semibold mb-4">Your Video</h2>
-        <video
-          src={videoUrl}
-          controls
-          className="w-full rounded-lg bg-black"
-          autoPlay
-        />
-      </div>
+      <VideoPlayer videoUrl={videoUrl} />
 
       {/* Downloads */}
-      <div className="bg-[#161616] border border-[#222] rounded-xl p-6">
-        <h2 className="text-lg font-semibold mb-4">Downloads</h2>
+      <div className="bg-[#141210] border border-[#3d3428] rounded-xl p-6">
+        <h2 className="text-lg font-semibold mb-4 text-[#f5f2ea]">Downloads</h2>
         <div className="flex flex-wrap gap-3">
           <DownloadButton href={videoUrl} label="Video (MP4)" />
           {result?.has_audio && (
@@ -49,8 +43,8 @@ export default function ResultsPanel({
 
       {/* Cost */}
       {result?.cost && (
-        <div className="bg-[#161616] border border-[#222] rounded-xl p-6">
-          <h2 className="text-lg font-semibold mb-4">Cost Estimate</h2>
+        <div className="bg-[#141210] border border-[#3d3428] rounded-xl p-6">
+          <h2 className="text-lg font-semibold mb-4 text-[#f5f2ea]">Cost Estimate</h2>
           <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
             <CostItem label="Gemini Vision" value={result.cost.gemini_vision} />
             <CostItem label="Veo Animation" value={result.cost.veo_animation} />
@@ -65,13 +59,22 @@ export default function ResultsPanel({
         </div>
       )}
 
+      {/* Post-Processing */}
+      <PostProcessing
+        videoUrl={videoUrl}
+        audioUrl={audioUrl}
+        musicUrl={musicUrl}
+        hasAudio={result?.has_audio ?? false}
+        hasMusic={result?.has_music ?? false}
+      />
+
       {/* Avatar Overlay */}
       <AvatarOverlay jobId={jobId} videoUrl={videoUrl} />
 
       {/* New Video */}
       <button
         onClick={onNewVideo}
-        className="w-full py-3 rounded-lg border border-[#333] text-gray-300 hover:text-white hover:border-orange-500 transition font-medium"
+        className="w-full py-3 rounded-lg border border-[#3d3428] text-[#f5f2ea] hover:text-white hover:border-[#d4b44e] transition font-medium"
       >
         Create New Video
       </button>
@@ -84,10 +87,126 @@ function DownloadButton({ href, label }: { href: string; label: string }) {
     <a
       href={href}
       download
-      className="px-4 py-2 rounded-lg bg-gradient-to-r from-orange-500 to-pink-500 text-white text-sm font-medium hover:opacity-90 transition"
+      className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#f5da6a] to-[#c9a84c] text-[#0a0a0a] text-sm font-medium hover:opacity-90 transition"
     >
       {label}
     </a>
+  );
+}
+
+function VideoPlayer({ videoUrl }: { videoUrl: string }) {
+  const [blobUrl, setBlobUrl] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [failed, setFailed] = useState(false);
+  const retriesRef = useRef(0);
+  const maxRetries = 10;
+
+  useEffect(() => {
+    let cancelled = false;
+
+    const fetchVideo = async () => {
+      setLoading(true);
+      setFailed(false);
+
+      while (retriesRef.current < maxRetries && !cancelled) {
+        try {
+          const res = await fetch(videoUrl);
+          if (res.ok) {
+            const blob = await res.blob();
+            if (!cancelled) {
+              setBlobUrl(URL.createObjectURL(blob));
+              setLoading(false);
+            }
+            return;
+          }
+        } catch {
+          // ignore, will retry
+        }
+        retriesRef.current += 1;
+        // Wait 3 seconds before retrying
+        await new Promise((r) => setTimeout(r, 3000));
+      }
+
+      if (!cancelled) {
+        setLoading(false);
+        setFailed(true);
+      }
+    };
+
+    fetchVideo();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [videoUrl]);
+
+  const handleRetry = () => {
+    retriesRef.current = 0;
+    setBlobUrl(null);
+    setFailed(false);
+    setLoading(true);
+
+    const fetchVideo = async () => {
+      while (retriesRef.current < maxRetries) {
+        try {
+          const res = await fetch(videoUrl);
+          if (res.ok) {
+            const blob = await res.blob();
+            setBlobUrl(URL.createObjectURL(blob));
+            setLoading(false);
+            return;
+          }
+        } catch {
+          // ignore
+        }
+        retriesRef.current += 1;
+        await new Promise((r) => setTimeout(r, 3000));
+      }
+      setLoading(false);
+      setFailed(true);
+    };
+
+    fetchVideo();
+  };
+
+  return (
+    <div className="bg-[#141210] border border-[#3d3428] rounded-xl p-6">
+      <h2 className="text-lg font-semibold mb-4 text-[#f5f2ea]">Your Video</h2>
+      {loading && (
+        <div className="w-full aspect-video rounded-lg bg-black flex flex-col items-center justify-center gap-2">
+          <div className="w-6 h-6 border-2 border-[#d4b44e] border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-[#a09888]">Loading video...</p>
+        </div>
+      )}
+      {!loading && blobUrl && (
+        <video
+          src={blobUrl}
+          controls
+          className="w-full rounded-lg bg-black"
+          autoPlay
+        />
+      )}
+      {!loading && failed && (
+        <div className="w-full aspect-video rounded-lg bg-black flex flex-col items-center justify-center gap-3">
+          <p className="text-sm text-[#a09888]">Video preview unavailable</p>
+          <div className="flex gap-3">
+            <button
+              onClick={handleRetry}
+              className="px-4 py-2 rounded-lg border border-[#3d3428] text-sm text-[#a09888] hover:text-[#f5f2ea] hover:border-[#d4b44e] transition"
+            >
+              Retry
+            </button>
+            <a
+              href={videoUrl}
+              download
+              className="px-4 py-2 rounded-lg bg-gradient-to-r from-[#f5da6a] to-[#c9a84c] text-[#0a0a0a] text-sm font-medium hover:opacity-90 transition"
+            >
+              Download Video
+            </a>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -102,10 +221,10 @@ function CostItem({
 }) {
   return (
     <div>
-      <p className="text-xs text-gray-400">{label}</p>
+      <p className="text-xs text-[#a09888]">{label}</p>
       <p
         className={`text-lg font-semibold ${
-          highlight ? "text-orange-400" : "text-gray-200"
+          highlight ? "text-[#d4b44e]" : "text-[#f5f2ea]"
         }`}
       >
         ${value.toFixed(2)}

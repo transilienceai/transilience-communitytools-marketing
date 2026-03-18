@@ -1,15 +1,19 @@
 @import "tailwindcss";
 
+@theme {
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+}
+
 :root {
-  --bg-primary: #0f0f0f;
-  --bg-card: #161616;
-  --bg-card-hover: #1a1a1a;
-  --border: #222;
-  --border-hover: #333;
-  --text-primary: #e5e5e5;
-  --text-secondary: #888;
-  --accent-orange: #f97316;
-  --accent-pink: #ec4899;
+  --bg-primary: #0c0c0c;
+  --bg-card: #141210;
+  --bg-card-hover: #1a1814;
+  --border: #2a2418;
+  --border-hover: #3d3428;
+  --text-primary: #f5f2ea;
+  --text-secondary: #a09888;
+  --accent-gold: #d4b44e;
+  --accent-gold-light: #f0d060;
 }
 
 body {
@@ -26,18 +30,19 @@ body {
 /* Shared input style */
 .input-field {
   width: 100%;
-  background: #1a1a1a;
-  border: 1px solid #333;
+  background: #1a1814;
+  border: 1px solid #3d3428;
   border-radius: 0.5rem;
   padding: 0.5rem 0.75rem;
   font-size: 0.875rem;
-  color: #e5e5e5;
+  color: #f5f2ea;
   outline: none;
   transition: border-color 0.15s;
 }
 .input-field:focus {
-  border-color: #f97316;
+  border-color: #d4b44e;
 }
 .input-field::placeholder {
-  color: #666;
+  color: #7a7060;
 }
+

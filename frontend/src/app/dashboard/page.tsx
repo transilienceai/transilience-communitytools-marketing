@@ -1,6 +1,6 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useState, type ReactNode } from "react";
 import {
   createFromStoryboard,
   createVideo,
@@ -16,6 +16,7 @@ import GenerationProgress from "@/components/dashboard/generation-progress";
 import ResultsPanel from "@/components/dashboard/results-panel";
 import StoryboardPanel from "@/components/dashboard/storyboard-panel";
 import BookendGenerator from "@/components/dashboard/bookend-generator";
+import RecentVideos from "@/components/dashboard/recent-videos";
 
 type AppState = "config" | "generating" | "results";
 
@@ -37,6 +38,7 @@ export default function DashboardPage() {
   const [musicPrompt, setMusicPrompt] = useState("");
   const [generateIntro, setGenerateIntro] = useState(false);
   const [generateOutro, setGenerateOutro] = useState(false);
+  const [maxWorkers, setMaxWorkers] = useState(5);
 
   // Bookend state
   const [bookendJobId, setBookendJobId] = useState("");
@@ -48,6 +50,14 @@ export default function DashboardPage() {
   // Storyboard state
   const [storyboardJobId, setStoryboardJobId] = useState<string | null>(null);
   const [useStoryboard, setUseStoryboard] = useState(false);
+
+  // Recording state
+  const [isRecording, setIsRecording] = useState(false);
+  const [generating, setGenerating] = useState(false);
+  const [generateError, setGenerateError] = useState<string | null>(null);
+
+  // Per-file voiceover settings
+  const [noVoiceoverFiles, setNoVoiceoverFiles] = useState<Set<string>>(new Set());
 
   const buildParams = useCallback(
     (): Omit<CreateVideoParams, "files"> => ({
@@ -67,15 +77,20 @@ export default function DashboardPage() {
       outroOption,
       introVeoPrompt,
       outroVeoPrompt,
+      maxWorkers,
+      noVoiceoverFiles: Array.from(noVoiceoverFiles),
     }),
     [
       voice, style, product, tone, resolution, scriptDuration, storyline,
       generateMusic, musicPrompt, generateIntro, generateOutro,
       bookendJobId, introOption, outroOption, introVeoPrompt, outroVeoPrompt,
+      maxWorkers, noVoiceoverFiles,
     ]
   );
 
   const handleGenerate = async () => {
+    setGenerating(true);
+    setGenerateError(null);
     try {
       let id: string;
       if (useStoryboard && storyboardJobId) {
@@ -87,7 +102,10 @@ export default function DashboardPage() {
       setJobId(id);
       setAppState("generating");
     } catch (err) {
-      alert(String(err));
+      const msg = err instanceof Error ? err.message : String(err);
+      setGenerateError(msg);
+    } finally {
+      setGenerating(false);
     }
   };
 
@@ -106,9 +124,16 @@ export default function DashboardPage() {
     setBookendJobId("");
   };
 
+  const handleLoadJob = (loadedJobId: string, hasAudio: boolean, hasMusic: boolean) => {
+    setJobId(loadedJobId);
+    setResult({ has_video: true, has_audio: hasAudio, has_music: hasMusic });
+    setAppState("results");
+  };
+
   const canGenerate =
     (files.length > 0 || (useStoryboard && storyboardJobId)) &&
-    appState === "config";
+    appState === "config" &&
+    !isRecording;
 
   return (
     <div className="space-y-8">
@@ -119,10 +144,21 @@ export default function DashboardPage() {
             <VoiceSelector value={voice} onChange={setVoice} />
           </Section>
 
+          {/* Style */}
+          <Section title="Style">
+            <StylePicker value={style} onChange={setStyle} />
+          </Section>
+
           {/* Content Source */}
           <Section title="Content">
             <div className="space-y-4">
-              <FileUpload files={files} onChange={setFiles} />
+              <FileUpload
+                files={files}
+                onChange={setFiles}
+                onRecordingChange={setIsRecording}
+                noVoiceoverFiles={noVoiceoverFiles}
+                onNoVoiceoverChange={setNoVoiceoverFiles}
+              />
 
               {style === "marketing" && (
                 <StoryboardPanel
@@ -130,6 +166,8 @@ export default function DashboardPage() {
                   storyline={storyline}
                   tone={tone}
                   style={style}
+                  hasFiles={files.length > 0}
+                  files={files}
                   onStoryboardReady={(id) => {
                     setStoryboardJobId(id);
                     setUseStoryboard(true);
@@ -138,12 +176,12 @@ export default function DashboardPage() {
               )}
 
               {storyboardJobId && (
-                <label className="flex items-center gap-2 text-sm text-gray-400">
+                <label className="flex items-center gap-2 text-sm text-[#a09888]">
                   <input
                     type="checkbox"
                     checked={useStoryboard}
                     onChange={(e) => setUseStoryboard(e.target.checked)}
-                    className="accent-orange-500"
+                    className="accent-[#d4b44e]"
                   />
                   Use storyboard images instead of uploaded files
                 </label>
@@ -151,13 +189,8 @@ export default function DashboardPage() {
             </div>
           </Section>
 
-          {/* Style */}
-          <Section title="Style">
-            <StylePicker value={style} onChange={setStyle} />
-          </Section>
-
           {/* Video Config */}
-          <Section title="Configuration">
+          <CollapsibleSection title="Advanced Custom Configurations">
             <VideoConfig
               product={product}
               onProductChange={setProduct}
@@ -177,8 +210,12 @@ export default function DashboardPage() {
               onGenerateIntroChange={setGenerateIntro}
               generateOutro={generateOutro}
               onGenerateOutroChange={setGenerateOutro}
+              maxWorkers={maxWorkers}
+              onMaxWorkersChange={setMaxWorkers}
+              files={files}
+              style={style}
             />
-          </Section>
+          </CollapsibleSection>
 
           {/* Bookends */}
           {(generateIntro || generateOutro) && (
@@ -190,6 +227,7 @@ export default function DashboardPage() {
                 style={style}
                 generateIntro={generateIntro}
                 generateOutro={generateOutro}
+                files={files}
                 onBookendReady={(id, intro, outro, introPrompt, outroPrompt) => {
                   setBookendJobId(id);
                   setIntroOption(intro);
@@ -204,11 +242,26 @@ export default function DashboardPage() {
           {/* Generate Button */}
           <button
             onClick={handleGenerate}
-            disabled={!canGenerate}
-            className="w-full py-3 rounded-lg bg-gradient-to-r from-orange-500 to-pink-500 text-white font-semibold text-lg disabled:opacity-40 hover:opacity-90 transition"
+            disabled={!canGenerate || generating}
+            className="w-full py-3 rounded-lg bg-gradient-to-r from-[#f5da6a] to-[#c9a84c] text-[#0a0a0a] font-semibold text-lg disabled:opacity-40 hover:opacity-90 transition"
           >
-            Generate Video
+            {generating
+              ? "Starting..."
+              : isRecording
+              ? "Stop recording first..."
+              : files.length === 0 && !(useStoryboard && storyboardJobId)
+              ? "Upload files to generate"
+              : "Generate Video"}
           </button>
+          {generateError && (
+            <div className="bg-red-500/10 border border-red-500/30 rounded-lg p-3 text-sm text-red-400">
+              <p className="font-medium">Generation failed</p>
+              <p className="text-xs mt-1 text-red-400/80">{generateError}</p>
+            </div>
+          )}
+
+          {/* Recent Videos */}
+          <RecentVideos onLoadJob={handleLoadJob} />
         </>
       )}
 
@@ -217,6 +270,10 @@ export default function DashboardPage() {
           jobId={jobId}
           fetcher={() => getJobStatus(jobId)}
           onDone={handleDone}
+          onRetry={() => {
+            setAppState("config");
+            setJobId(null);
+          }}
         />
       )}
 
@@ -242,9 +299,40 @@ function Section({
   children: React.ReactNode;
 }) {
   return (
-    <div className="bg-[#161616] border border-[#222] rounded-xl p-6">
-      <h2 className="text-lg font-semibold mb-4">{title}</h2>
+    <div className="bg-[#141210] border border-[#3d3428] rounded-xl p-6">
+      <h2 className="text-lg font-semibold mb-4 text-[#f5f2ea]">{title}</h2>
       {children}
+    </div>
+  );
+}
+
+function CollapsibleSection({
+  title,
+  children,
+}: {
+  title: string;
+  children: ReactNode;
+}) {
+  const [open, setOpen] = useState(false);
+
+  return (
+    <div className="bg-[#141210] border border-[#3d3428] rounded-xl p-6">
+      <button
+        onClick={() => setOpen(!open)}
+        className="flex items-center justify-between w-full text-left"
+      >
+        <h2 className="text-lg font-semibold text-[#f5f2ea]">{title}</h2>
+        <svg
+          className={`w-5 h-5 text-[#a09888] transition-transform ${open ? "rotate-180" : ""}`}
+          fill="none"
+          viewBox="0 0 24 24"
+          stroke="currentColor"
+          strokeWidth={2}
+        >
+          <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
+        </svg>
+      </button>
+      {open && <div className="mt-4">{children}</div>}
     </div>
   );
 }

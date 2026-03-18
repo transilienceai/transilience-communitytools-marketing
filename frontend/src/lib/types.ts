@@ -72,4 +72,6 @@ export interface CreateVideoParams {
   outroOption: number;
   introVeoPrompt: string;
   outroVeoPrompt: string;
+  maxWorkers: number;
+  noVoiceoverFiles?: string[];
 }

@@ -41,6 +41,10 @@ export async function createVideo(params: CreateVideoParams): Promise<string> {
   if (params.outroOption) form.append("outro_option", String(params.outroOption));
   if (params.introVeoPrompt) form.append("intro_veo_prompt", params.introVeoPrompt);
   if (params.outroVeoPrompt) form.append("outro_veo_prompt", params.outroVeoPrompt);
+  form.append("max_workers", String(params.maxWorkers));
+  if (params.noVoiceoverFiles && params.noVoiceoverFiles.length > 0) {
+    form.append("no_voiceover_files", JSON.stringify(params.noVoiceoverFiles));
+  }
 
   const res = await fetch(`${API_BASE}/create`, { method: "POST", body: form });
   if (!res.ok) throw new Error((await res.json()).error ?? "Create failed");
@@ -70,6 +74,7 @@ export async function createFromStoryboard(
   if (params.outroOption) form.append("outro_option", String(params.outroOption));
   if (params.introVeoPrompt) form.append("intro_veo_prompt", params.introVeoPrompt);
   if (params.outroVeoPrompt) form.append("outro_veo_prompt", params.outroVeoPrompt);
+  form.append("max_workers", String(params.maxWorkers));
 
   const res = await fetch(`${API_BASE}/create-from-storyboard`, { method: "POST", body: form });
   if (!res.ok) throw new Error((await res.json()).error ?? "Create failed");
@@ -122,6 +127,39 @@ export async function getBookendStatus(jobId: string): Promise<{ state: string; 
 
 export function bookendImageUrl(jobId: string, filename: string): string {
   return `${API_BASE}/bookend-image/${jobId}/${filename}`;
+}
+
+// --- Recent Jobs ---
+
+export interface RecentJob {
+  job_id: string;
+  created_at: number;
+  has_video: boolean;
+  has_audio: boolean;
+  has_music: boolean;
+}
+
+export async function fetchRecentJobs(): Promise<RecentJob[]> {
+  const res = await fetch(`${API_BASE}/recent-jobs`);
+  const data = await res.json();
+  return data.jobs ?? [];
+}
+
+// --- Content Analysis ---
+
+export async function analyzeContent(files: File[], style: string): Promise<{
+  product_name: string;
+  tone: string;
+  storyline: string;
+  music_prompt: string;
+  script_duration: number;
+}> {
+  const form = new FormData();
+  files.slice(0, 10).forEach((f) => form.append("files", f));
+  form.append("style", style);
+  const res = await fetch(`${API_BASE}/analyze-content`, { method: "POST", body: form });
+  if (!res.ok) throw new Error((await res.json()).error ?? "Analysis failed");
+  return res.json();
 }
 
 // --- Post-processing ---
