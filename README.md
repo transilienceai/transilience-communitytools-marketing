@@ -119,9 +119,9 @@ python cli.py create ./content/ -o video.mp4 --dry-run
 
 | Sample | Description | Source |
 |--------|------------|--------|
-| [final.mp4](project/videogen/samples/video_samples/final.mp4) | Full marketing video — voiceover + music | Mixed content |
-| [video_1.mp4](project/videogen/samples/video_samples/video_1.mp4) | Product feature walkthrough | Screenshots |
-| [video_Vulnerability_post.mp4](project/videogen/samples/video_samples/video_Vulnerability_post.mp4) | Security vulnerability explainer | Screen recording |
+| [marketing.mp4](project/videogen/samples/video_samples/marketing.mp4) | Full marketing video — voiceover + music | Mixed content |
+| [feature_explainer.mp4](project/videogen/samples/video_samples/feature_explainer.mp4) | Product feature walkthrough | Screenshots |
+| [Vulnerability_tutorial.mp4](project/videogen/samples/video_samples/Vulnerability_tutorial.mp4) | Security vulnerability tutorial | Screen recording |
 
 > Clone the repo and open files locally to view, or download from GitHub.
 
@@ -547,4 +547,3 @@ export GOOGLE_PASSWORD="..."      # Optional — Auto sign-in for storyboard --l
 **Built by [Transilience AI](https://www.transilience.ai)**
 
 </div>
-# communitytools-marketing
