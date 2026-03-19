@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+.env
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Generated output
+*.mp3
+trash/
+
+# Node / Frontend
+node_modules/
+.next/
+frontend/
+
+# Temp
+.temp_*/
+*.tmp
