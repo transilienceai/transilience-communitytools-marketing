@@ -9,7 +9,6 @@ __pycache__/
 Thumbs.db
 
 # Generated output
-*.mp4
 *.mp3
 trash/
 
