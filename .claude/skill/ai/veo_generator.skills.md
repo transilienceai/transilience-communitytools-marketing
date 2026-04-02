@@ -6,17 +6,12 @@ Google Veo 3.1 video generation from text prompts or images.
 
 ## Functions
 
-### `generate_video_veo(prompt, output_path, image_path=None, last_image_path=None, duration=8, aspect_ratio="16:9", resolution="1080p", model="veo-3.1-generate-preview", api_key=None, enable_audio=True) -> Path`
-Generates video using Veo 3.1 REST API. Supports text-to-video or image-to-video (with optional last frame for transitions). Polls for completion (max 10 minutes).
-
-### `generate_video_from_images_veo(images, output_path, prompt="smooth cinematic transition between scenes", api_key=None, resolution="1080p") -> Path`
-Generates video from multiple images. Uses first image as animation base.
-
-### `animate_image_veo(image_path, output_path, motion_prompt="subtle natural motion, cinematic quality", duration=8, api_key=None) -> Path`
-Animates a static image using Veo 3.1.
-
-### `list_veo_models() -> dict`
-Lists available Veo models with capabilities (resolutions, aspect ratios, features).
+| Function | Description |
+|----------|-------------|
+| `generate_video_veo()` | Generate video from text prompt or image using Veo 3.1. Supports image-to-video with optional last frame for transitions. |
+| `generate_video_from_images_veo()` | Generate video from multiple images. Uses first image as animation base. |
+| `animate_image_veo()` | Animate a static image with cinematic motion using Veo 3.1. |
+| `list_veo_models()` | List available Veo models with capabilities. |
 
 ## Models
 - `veo-3.1-generate-preview` — Full quality

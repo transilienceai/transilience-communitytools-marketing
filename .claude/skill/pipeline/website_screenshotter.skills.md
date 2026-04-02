@@ -6,27 +6,18 @@ Playwright-based website crawling and viewport screenshot capture.
 
 ## Data Classes
 
-### `WebsiteCapture`
-Single capture: `index`, `label` (e.g. "homepage_scroll_0"), `path`, `source_url`, `capture_type` ("scroll" | "nav_click").
+| Class | Description |
+|-------|-------------|
+| `WebsiteCapture` | Single capture: `index`, `label` (e.g. "homepage_scroll_0"), `path`, `source_url`, `capture_type` ("scroll" or "nav_click"). |
 
 ## Functions
 
-### `crawl_and_capture(url, output_dir, aspect_ratio="16:9", wait_seconds=3.0, auth_state=None) -> List[WebsiteCapture]`
-Async. Crawls a website:
-1. Load homepage, scroll through capturing every viewport-height (max 10 per page)
-2. Find all same-domain navigation links (nav, header, menu elements)
-3. Visit each nav link and scroll-capture
-4. All captures at configured aspect ratio (default 1920x1080)
-Supports saved auth state (cookies/localStorage). Auto-installs Chromium if needed.
-
-### `crawl_and_capture_sync(url, output_dir, **kwargs) -> List[WebsiteCapture]`
-Synchronous wrapper via `asyncio.run()`.
-
-### `login_and_save_auth(url, email="", password="") -> Path`
-Async. Signs into Google using a persistent Chrome profile (avoids automation detection). Supports auto sign-in via `GOOGLE_EMAIL`/`GOOGLE_PASSWORD` env vars or manual browser login (120s timeout). Saves auth state to `~/.cache/video_generator/auth_state.json`.
-
-### `login_and_save_auth_sync(url, email="", password="") -> Path`
-Synchronous wrapper.
+| Function | Description |
+|----------|-------------|
+| `crawl_and_capture()` | Async. Crawls a website: load homepage, scroll-capture every viewport-height (max 10 per page), find same-domain nav links, visit and scroll-capture each. Supports saved auth state. Auto-installs Chromium if needed. |
+| `crawl_and_capture_sync()` | Synchronous wrapper via `asyncio.run()`. |
+| `login_and_save_auth()` | Async. Signs into Google using a persistent Chrome profile. Supports auto sign-in via env vars or manual browser login (120s timeout). Saves auth state to `~/.cache/video_generator/auth_state.json`. |
+| `login_and_save_auth_sync()` | Synchronous wrapper. |
 
 ## Internal Functions
 - `_scroll_and_capture()` — Scroll through page, capture per viewport

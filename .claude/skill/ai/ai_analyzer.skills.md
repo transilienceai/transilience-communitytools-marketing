@@ -6,8 +6,12 @@ AI Vision analysis and marketing script generation using Claude.
 
 ## Classes
 
-### `SceneScript`
-Dataclass for a single scene's script.
+| Class | Description |
+|-------|-------------|
+| `SceneScript` | Dataclass for a single scene's script. |
+| `VideoScript` | Dataclass for complete video script. |
+
+**SceneScript fields:**
 - `media_path` — Path to source media
 - `description` — Scene description
 - `voiceover` — Voiceover script text
@@ -15,8 +19,7 @@ Dataclass for a single scene's script.
 - `duration` — Scene duration (seconds)
 - `is_video` — Whether source is video
 
-### `VideoScript`
-Dataclass for complete video script.
+**VideoScript fields:**
 - `title` — Video title
 - `scenes` — List of `SceneScript`
 - `tone` — Script tone
@@ -24,14 +27,11 @@ Dataclass for complete video script.
 
 ## Functions
 
-### `analyze_media_files(media_files, product_name="", tone="professional and engaging", target_audience="general audience", additional_context="") -> VideoScript`
-Analyzes all media files (images + videos) and generates a cohesive marketing script.
-
-### `analyze_screenshots(image_paths, product_name="", tone="professional and engaging", target_audience="general audience", additional_context="") -> VideoScript`
-Legacy function. Analyzes screenshots and generates marketing script.
-
-### `regenerate_scene_script(scene, feedback="", tone="professional and engaging") -> SceneScript`
-Regenerates script for a single scene with optional feedback.
+| Function | Description |
+|----------|-------------|
+| `analyze_media_files()` | Analyzes all media files (images + videos) and generates a cohesive marketing script. |
+| `analyze_screenshots()` | Legacy function. Analyzes screenshots and generates marketing script. |
+| `regenerate_scene_script()` | Regenerates script for a single scene with optional feedback. |
 
 ## Dependencies
 - `anthropic` (Claude API — model: `claude-sonnet-4-20250514`)

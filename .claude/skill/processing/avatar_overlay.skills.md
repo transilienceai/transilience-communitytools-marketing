@@ -6,14 +6,9 @@ FFmpeg-based avatar compositing — overlays an image or video avatar on a corne
 
 ## Functions
 
-### `overlay_avatar(input_video, avatar_source, output_video, position="bottom-right", scale=0.15, margin=20, opacity=1.0, border_radius=0, fps=30) -> Path`
-Composite an avatar onto a video using FFmpeg's overlay filter.
-
-- **Image avatars** (.png/.jpg): Scaled to `scale * video_width`, supports opacity via `colorchannelmixer`
-- **Video avatars** (.mp4/.mov): Scaled and looped to match main video duration, uses `shortest=1`
-- **Positions**: top-left, top-right, bottom-left, bottom-right
-- Uses ffprobe to get main video dimensions
-- Output: H.264, AAC 192kbps, configurable FPS
+| Function | Description |
+|----------|-------------|
+| `overlay_avatar()` | Composite an avatar onto a video using FFmpeg's overlay filter. Image avatars (.png/.jpg) scaled to `scale * video_width`, supports opacity via `colorchannelmixer`. Video avatars (.mp4/.mov) scaled and looped to match main video duration. Positions: top-left, top-right, bottom-left, bottom-right. Output: H.264, AAC 192kbps. |
 
 ## CLI Command
 ```bash

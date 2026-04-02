@@ -6,31 +6,21 @@ Creates engaging animations with cursor movement, text highlighting, and zoom ef
 
 ## Data Classes
 
-### `TextRegion`
-Detected text region: `text`, `x`, `y`, `width`, `height`, `center_x`, `center_y`.
-
-### `AnimationKeyframe`
-Animation keyframe: `time` (seconds), `x`, `y`, `text`, `highlight` (bool), `zoom` (float).
+| Class | Description |
+|-------|-------------|
+| `TextRegion` | Detected text region: `text`, `x`, `y`, `width`, `height`, `center_x`, `center_y`. |
+| `AnimationKeyframe` | Animation keyframe: `time` (seconds), `x`, `y`, `text`, `highlight` (bool), `zoom` (float). |
 
 ## Functions
 
-### `create_animated_scene(image_path, script_text, audio_path, output_path, video_size=(1920,1080), fps=30) -> Path`
-Main entry point. Analyzes image for text regions, creates keyframes synced to audio duration, renders animated video with cursor/highlight/zoom, then combines with audio.
-
-### `analyze_image_for_text_regions(image_path, script_text, api_key=None) -> List[TextRegion]`
-Uses Gemini Vision to find text regions in an image. Returns coordinates as pixel positions. Falls back to `_estimate_text_regions()` on failure.
-
-### `create_animation_keyframes(regions, audio_duration, script_text) -> List[AnimationKeyframe]`
-Distributes attention across text regions over audio duration. Creates entry + settle keyframes per region with subtle zoom (1.15-1.2x).
-
-### `apply_text_animation(image_path, output_path, keyframes, duration, video_size, fps) -> Path`
-Renders frame-by-frame video with ease-out cursor interpolation, pulsing yellow highlight, and zoom-to-cursor effects. Uses MoviePy VideoClip.
-
-### `create_cursor_image(size=32) -> Path`
-Generates a white arrow cursor PNG with black outline.
-
-### `create_highlight_overlay(width, height, color=(255,255,0), opacity=80) -> Path`
-Generates a semi-transparent highlight rectangle PNG.
+| Function | Description |
+|----------|-------------|
+| `create_animated_scene()` | Main entry point. Analyzes image for text regions, creates keyframes synced to audio duration, renders animated video with cursor/highlight/zoom, then combines with audio. |
+| `analyze_image_for_text_regions()` | Uses Gemini Vision to find text regions in an image. Returns coordinates as pixel positions. Falls back to `_estimate_text_regions()` on failure. |
+| `create_animation_keyframes()` | Distributes attention across text regions over audio duration. Creates entry + settle keyframes per region with subtle zoom (1.15-1.2x). |
+| `apply_text_animation()` | Renders frame-by-frame video with ease-out cursor interpolation, pulsing yellow highlight, and zoom-to-cursor effects. Uses MoviePy VideoClip. |
+| `create_cursor_image()` | Generates a white arrow cursor PNG with black outline. |
+| `create_highlight_overlay()` | Generates a semi-transparent highlight rectangle PNG. |
 
 ## Dependencies
 - `moviepy`, `PIL`, `numpy`, Gemini Vision (via `gemini_client`)

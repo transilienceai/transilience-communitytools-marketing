@@ -6,17 +6,12 @@ Core video metadata and probing utilities using ffprobe/ffmpeg.
 
 ## Functions
 
-### `get_duration(file_path) -> float`
-Gets duration of video or audio file in seconds. Tries format duration, then stream duration, then frame count fallback.
-
-### `get_video_dimensions(video_path) -> Tuple[int, int]`
-Gets video width and height, rounded to even numbers for encoding compatibility. Returns `(width, height)`.
-
-### `get_video_fps(video_path) -> float`
-Gets video frame rate using ffprobe. Returns fps (default 30.0).
-
-### `probe_video(video_path, entries) -> str`
-Generic ffprobe wrapper for extracting video metadata. Returns raw ffprobe output.
+| Function | Description |
+|----------|-------------|
+| `get_duration()` | Gets duration of video or audio file in seconds. Tries format duration, then stream duration, then frame count fallback. |
+| `get_video_dimensions()` | Gets video width and height, rounded to even numbers for encoding compatibility. Returns `(width, height)`. |
+| `get_video_fps()` | Gets video frame rate using ffprobe. Returns fps (default 30.0). |
+| `probe_video()` | Generic ffprobe wrapper for extracting video metadata. Returns raw ffprobe output. |
 
 ## Dependencies
 - `subprocess` (ffprobe/ffmpeg)

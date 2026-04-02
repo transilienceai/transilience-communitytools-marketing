@@ -6,17 +6,11 @@ Video post-processing: speed adjustment, volume control, and audio remixing via 
 
 ## Functions
 
-### `adjust_video(input_video, output_video, video_speed=1.0, overall_volume=None, voice_audio=None, music_audio=None, voice_volume=5.0, music_volume=0.03, extract_audio=True) -> Path`
-Main entry point. Two modes:
-- **Remix mode** (voice_audio provided): Strip existing audio, mix voice + music at specified volumes, optional speed change
-- **Simple mode**: Adjust overall audio volume and/or video speed
-Uses `-c:v copy` when only audio changes needed (no re-encode). Optionally extracts MP3 alongside output.
-
-### `build_atempo_chain(speed) -> str`
-Build chained atempo filters for FFmpeg. Each filter limited to 0.5-2.0 range, so extreme speeds are chained (e.g., 4x = `atempo=2.0,atempo=2.0`).
-
-### `load_manifest(manifest_path) -> Optional[dict]`
-Load a pipeline manifest JSON file.
+| Function | Description |
+|----------|-------------|
+| `adjust_video()` | Main entry point. Two modes: **Remix mode** (voice_audio provided) strips existing audio and mixes voice + music at specified volumes; **Simple mode** adjusts overall audio volume and/or video speed. Uses `-c:v copy` when only audio changes needed. Optionally extracts MP3 alongside output. |
+| `build_atempo_chain()` | Build chained atempo filters for FFmpeg. Each filter limited to 0.5-2.0 range, so extreme speeds are chained (e.g., 4x = `atempo=2.0,atempo=2.0`). |
+| `load_manifest()` | Load a pipeline manifest JSON file. |
 
 ## Internal Functions
 - `_speed_only()` — Re-encode video + audio with setpts/atempo

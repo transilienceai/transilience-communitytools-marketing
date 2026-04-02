@@ -6,30 +6,19 @@ Generates branded intro and outro frames for marketing videos. Creates 3 options
 
 ## Data Classes
 
-### `BookendSuggestion`
-Single concept: `option_number`, `title_text`, `subtitle_text`, `image_description` (Imagen prompt), `veo_motion_prompt`.
+| Class | Description |
+|-------|-------------|
+| `BookendSuggestion` | Single concept: `option_number`, `title_text`, `subtitle_text`, `image_description` (Imagen prompt), `veo_motion_prompt`. |
 
 ## Functions
 
-### `generate_bookends(product, storyline, tone, style, context, output_dir, resolution, duration, interactive, generate_intro, generate_outro, api_key) -> Tuple[Optional[Path], Optional[Path]]`
-High-level orchestrator. For each enabled bookend type (intro/outro):
-1. Gemini generates 3 creative concepts
-2. Imagen 4.0 generates 3 images
-3. User picks one (or auto-pick in non-interactive mode)
-4. Veo animates the selected image (5s)
-Returns `(intro_clip_path, outro_clip_path)`.
-
-### `generate_bookend_suggestions(bookend_type, product, storyline, tone, style, context, api_key) -> List[BookendSuggestion]`
-Uses Gemini to generate 3 creative concepts. Intro: product name + tagline. Outro: CTA + product name. Each concept includes distinct visual style, color palette, and motion direction.
-
-### `generate_bookend_images(suggestions, output_dir, bookend_type, aspect_ratio, api_key) -> List[Path]`
-Generates images for all 3 suggestions using Imagen 4.0. Images are background-only (no text — text overlaid separately).
-
-### `present_bookend_choices(suggestions, image_paths, bookend_type, interactive) -> int`
-Shows Rich table of options. In interactive mode, prompts user to pick 1-3. In non-interactive mode, auto-selects first valid option.
-
-### `animate_bookend(image_path, suggestion, output_path, duration, resolution, api_key) -> Path`
-Animates selected image with Veo 3.1 using the suggestion's motion prompt. Falls back to static ImageClip if Veo fails.
+| Function | Description |
+|----------|-------------|
+| `generate_bookends()` | High-level orchestrator. For each enabled bookend type: Gemini generates 3 concepts, Imagen generates 3 images, user picks one (or auto-pick), Veo animates the selected image. Returns `(intro_clip_path, outro_clip_path)`. |
+| `generate_bookend_suggestions()` | Uses Gemini to generate 3 creative concepts. Each concept includes distinct visual style, color palette, and motion direction. |
+| `generate_bookend_images()` | Generates images for all 3 suggestions using Imagen 4.0. Images are background-only (no text). |
+| `present_bookend_choices()` | Shows Rich table of options. In interactive mode, prompts user to pick 1-3. In non-interactive mode, auto-selects first valid option. |
+| `animate_bookend()` | Animates selected image with Veo 3.1 using the suggestion's motion prompt. Falls back to static ImageClip if Veo fails. |
 
 ## CLI Flags
 ```bash

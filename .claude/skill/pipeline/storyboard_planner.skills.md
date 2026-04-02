@@ -6,19 +6,17 @@ Gemini Vision scene planning from website screenshots + storyline.
 
 ## Data Classes
 
-### `StoryboardScene`
-Single scene: `scene_number`, `title`, `voiceover_script`, `image_description` (Imagen prompt), `best_capture_index` (-1 if none), `best_capture_reason`.
-
-### `Storyboard`
-Complete plan: `url`, `storyline`, `scenes: List[StoryboardScene]`, `product`, `tone`, `style`.
+| Class | Description |
+|-------|-------------|
+| `StoryboardScene` | Single scene: `scene_number`, `title`, `voiceover_script`, `image_description` (Imagen prompt), `best_capture_index` (-1 if none), `best_capture_reason`. |
+| `Storyboard` | Complete plan: `url`, `storyline`, `scenes: List[StoryboardScene]`, `product`, `tone`, `style`. |
 
 ## Functions
 
-### `plan_storyboard(storyline, url, captures, capture_labels, num_scenes=6, product="", context="", tone="", style="marketing", api_key=None) -> Storyboard`
-Shows Gemini ALL captured screenshots (up to 20, labeled by index). Gemini picks the best capture per scene and writes Imagen prompts for futuristic tech visuals. Uses `VIDEO_STYLE_PROFILES` for persona/voice/structure. Retries up to 3 times on JSON parse failures. Works with or without captures (text-only fallback).
-
-### `write_storyboard_text(storyboard, output_path) -> Path`
-Writes human-readable storyboard text file with scene breakdown.
+| Function | Description |
+|----------|-------------|
+| `plan_storyboard()` | Shows Gemini ALL captured screenshots (up to 20, labeled by index). Gemini picks the best capture per scene and writes Imagen prompts for futuristic tech visuals. Uses `VIDEO_STYLE_PROFILES` for persona/voice/structure. Retries up to 3 times on JSON parse failures. Works with or without captures (text-only fallback). |
+| `write_storyboard_text()` | Writes human-readable storyboard text file with scene breakdown. |
 
 ## Imagen Prompt Guidelines (built into prompt)
 - Focus: holographic dashboards, floating 3D data, transparent tablets, AI interfaces

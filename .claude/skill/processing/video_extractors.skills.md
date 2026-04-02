@@ -6,14 +6,11 @@ Frame and keyframe extraction utilities using FFmpeg.
 
 ## Functions
 
-### `extract_keyframes(video_path, output_dir, max_frames=5) -> List[Path]`
-Extracts evenly-spaced keyframes from video. Quality: `-q:v 2` (high quality JPEG). Returns list of keyframe image paths.
-
-### `extract_last_frame(video_path, output_path) -> Path`
-Extracts last frame of video as JPEG image. Used to chain Veo scenes: last frame of scene N becomes input for scene N+1. Uses `-sseof` for reliable end-seeking with fallback.
-
-### `extract_frame_at_time(video_path, timestamp, output_path) -> Path`
-Extracts single frame at specific timestamp. Raises `RuntimeError` if extraction fails.
+| Function | Description |
+|----------|-------------|
+| `extract_keyframes()` | Extracts evenly-spaced keyframes from video. Quality: `-q:v 2` (high quality JPEG). Returns list of keyframe image paths. |
+| `extract_last_frame()` | Extracts last frame of video as JPEG image. Used to chain Veo scenes: last frame of scene N becomes input for scene N+1. Uses `-sseof` for reliable end-seeking with fallback. |
+| `extract_frame_at_time()` | Extracts single frame at specific timestamp. Raises `RuntimeError` if extraction fails. |
 
 ## Dependencies
 - `subprocess` (FFmpeg)

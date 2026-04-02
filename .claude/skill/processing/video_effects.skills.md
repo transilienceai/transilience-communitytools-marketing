@@ -6,18 +6,9 @@ Cinematic effects including zoom, pan, color grading, transitions using FFmpeg.
 
 ## Functions
 
-### `apply_cinematic_effects(video_path, movement_segments, output_path) -> Path`
-Applies single-pass cinematic effects via FFmpeg filter chains:
-
-- **Zoom pulses** — `scale eval=frame` every 12 seconds
-- **Smooth black dips** — Gaussian curves every 12 seconds
-- **Alternating pattern** — Zoom + dip at even flashes, dip-only at odd
-- **Vertical drift** — Sine wave (0.3 rad/s, ~21s period)
-- **Color grading** — Brightness +0.02, saturation x1.08
-- **Vignette** — Subtle vignette effect
-- **Fade in/out** — 0.6s fade in, 0.8s fade out
-
-Returns path to output video with effects (or original path if effects fail).
+| Function | Description |
+|----------|-------------|
+| `apply_cinematic_effects()` | Applies single-pass cinematic effects via FFmpeg filter chains: zoom pulses every 12s, smooth black dips, alternating zoom+dip pattern, vertical sine wave drift, brightness/saturation color grading, vignette, and fade in/out. Returns path to output video (or original path if effects fail). |
 
 ## Dependencies
 - `subprocess` (FFmpeg), `shutil`
