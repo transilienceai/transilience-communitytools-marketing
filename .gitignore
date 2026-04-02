@@ -3,6 +3,8 @@ __pycache__/
 *.pyc
 *.pyo
 .env
+.env.*
+!.env.example
 
 # OS
 .DS_Store

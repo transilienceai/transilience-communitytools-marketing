@@ -74,6 +74,7 @@ Images / PPT / PDF / Videos / URLs  →  AI Pipeline  →  Professional Marketin
 ```bash
 pip install -r requirements.txt
 playwright install chromium    # For website storyboarding
+cp .env.example .env           # Fill in your local secrets; .env stays ignored
 ```
 
 ### API Keys
@@ -534,6 +535,7 @@ video_generator/
 ### Required API Keys
 
 ```bash
+cp .env.example .env
 export GOOGLE_API_KEY="..."       # Required — Gemini + Veo 3.1 + Imagen 4.0
 export ELEVENLABS_API_KEY="..."   # Optional — Premium TTS, voice cloning, music
 export GOOGLE_EMAIL="..."         # Optional — Auto sign-in for storyboard --login
