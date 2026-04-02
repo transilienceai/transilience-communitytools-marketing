@@ -12,6 +12,7 @@ from .video_cleaner import analyze_motion, find_stillness_periods, clean_video
 from .video_effects import apply_cinematic_effects
 from .video_extractors import extract_keyframes, extract_last_frame, extract_frame_at_time
 from .post_processor import adjust_video, build_atempo_chain, load_manifest
+from .caption_renderer import burn_captions_onto_video, CaptionWord
 
 __all__ = [
     # video_cleaner
@@ -28,4 +29,7 @@ __all__ = [
     'adjust_video',
     'build_atempo_chain',
     'load_manifest',
+    # caption_renderer
+    'burn_captions_onto_video',
+    'CaptionWord',
 ]

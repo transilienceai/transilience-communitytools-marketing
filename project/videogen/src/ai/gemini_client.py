@@ -55,7 +55,7 @@ def _extract_text(response) -> str:
 def generate_with_images(
     prompt: str,
     images: List[Tuple[bytes, str]],
-    max_output_tokens: int = 8192,
+    max_output_tokens: int = 16384,
     api_key: Optional[str] = None,
     model: str = DEFAULT_MODEL,
 ) -> str:
@@ -89,7 +89,7 @@ def generate_with_images(
 
 def generate_text(
     prompt: str,
-    max_output_tokens: int = 8192,
+    max_output_tokens: int = 16384,
     api_key: Optional[str] = None,
     model: str = DEFAULT_MODEL,
     json_output: bool = False,
@@ -123,7 +123,7 @@ def generate_text(
 
 def generate_with_content_blocks(
     blocks: list,
-    max_output_tokens: int = 2000,
+    max_output_tokens: int = 16384,
     api_key: Optional[str] = None,
     model: str = DEFAULT_MODEL,
     json_output: bool = False,

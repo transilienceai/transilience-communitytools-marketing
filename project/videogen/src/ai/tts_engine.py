@@ -461,6 +461,12 @@ def extract_audio_from_video(video_path: Path, output_path: Optional[Path] = Non
 
     result = subprocess.run(cmd, capture_output=True, text=True)
     if result.returncode != 0:
+        if "moov atom not found" in result.stderr:
+            raise RuntimeError(
+                f"Video file is corrupt or incomplete: {video_path.name}. "
+                "The recording may have been interrupted, or the file was truncated during upload. "
+                "Try re-exporting the video (e.g. open in QuickTime → File → Export As) before uploading."
+            )
         raise RuntimeError(f"Failed to extract audio: {result.stderr[-300:]}")
 
     if not output_path.exists() or output_path.stat().st_size == 0:

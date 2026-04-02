@@ -104,6 +104,28 @@ VIDEO_STYLE_PROFILES = {
         ),
         "avoid": "Avoid skipping steps. No assuming the viewer already knows how. No marketing language or hype. No jargon without explanation.",
     },
+    "instagram-shorts": {
+        "persona": "You are a viral short-form content creator who knows exactly how to hook viewers in the first second and keep them watching. You write punchy, scroll-stopping scripts optimized for vertical video under 60 seconds.",
+        "voice": (
+            "- HOOK in the first 2 seconds — start mid-action, with a bold claim, or a pattern interrupt\n"
+            "- Write ultra-short sentences. One idea per beat. Rapid pacing.\n"
+            "- Use direct address: \"You need to see this\", \"Watch what happens when...\", \"Here's the trick nobody talks about\"\n"
+            "- Create curiosity gaps — tease what's coming without giving it away\n"
+            "- Use emotional triggers: surprise, FOMO, satisfaction, awe\n"
+            "- Every sentence must earn its place — if it doesn't add value or momentum, cut it\n"
+            "- Write for sound-on AND captions — lines should read well as text overlays\n"
+            "- Use trending language naturally: \"lowkey\", \"game changer\", \"no way\", \"wait for it\"\n"
+            "- End with a replay trigger — something that makes them want to watch again or share"
+        ),
+        "structure": (
+            "1. Scene 1: HOOK — Pattern interrupt or bold statement that stops the scroll (1-2 sec)\n"
+            "2. Scene 2: CONTEXT — Quick setup, just enough to understand (2-3 sec)\n"
+            "3. Middle scenes: DELIVER — Show the thing, rapid cuts, build momentum fast\n"
+            "4. Late scene: PAYOFF — The satisfying reveal, result, or transformation\n"
+            "5. Final scene: CTA — Follow, save, share, or comment prompt. Keep it casual."
+        ),
+        "avoid": "Avoid long sentences. No corporate language. No slow buildups — every second counts. No \"In this video we'll...\". No filler words. Keep total script under 60 seconds of speech.",
+    },
 }
 
 
@@ -2003,6 +2025,14 @@ def create_marketing_video_veo(
     intro_veo_prompt: str = "",
     outro_veo_prompt: str = "",
     no_voiceover_files: Optional[List[str]] = None,
+    no_voiceover: bool = False,
+    clean_threshold: float = 10.0,
+    video_speed: float = 1.0,
+    remove_shaky: bool = False,
+    shake_threshold: float = 3.0,
+    intro_video_paths: Optional[List[Path]] = None,
+    outro_video_paths: Optional[List[Path]] = None,
+    captions: bool = False,
 ) -> Path:
     """
     Create a complete marketing video using Veo 3.1.
@@ -2043,8 +2073,9 @@ def create_marketing_video_veo(
 
     IMAGE_EXTENSIONS = {'.png', '.jpg', '.jpeg', '.webp', '.gif', '.bmp'}
 
-    # Get image and video files
-    input_path = Path(input_path)
+    # Get image and video files — resolve paths early to avoid relative-path issues
+    input_path = Path(input_path).resolve()
+    output_path = Path(output_path).resolve()
     # ordered_items: list of (path, "image"|"video") in filename order
     ordered_items: List[Tuple[Path, str]] = []
 
@@ -2169,7 +2200,7 @@ def create_marketing_video_veo(
     ))
 
     # Create temp directory
-    temp_dir = Path(".temp_veo_pipeline")
+    temp_dir = Path(".temp_veo_pipeline").resolve()
     temp_dir.mkdir(exist_ok=True)
 
     scenes: List[SceneData] = []
@@ -2226,7 +2257,7 @@ def create_marketing_video_veo(
 
             # Check if user marked this file as "no voiceover" (keep original audio only)
             _no_vo_files = no_voiceover_files or []
-            skip_voiceover = item_path.name in _no_vo_files
+            skip_voiceover = no_voiceover or item_path.name in _no_vo_files
 
             # Check for companion mic file (screen recording with separate voiceover)
             # e.g. screen-recording-2026-03-18.webm + mic-recording-2026-03-18.webm
@@ -2258,17 +2289,41 @@ def create_marketing_video_veo(
             except Exception:
                 original_vid_duration = None
 
-            # Skip voiceover: keep original audio, no transcription/TTS
+            # Skip voiceover: clean video, strip audio, no transcription/TTS
             if skip_voiceover:
-                console.print(f"  [yellow]⊘[/yellow] No voiceover — keeping original audio intact")
-                vid_duration = original_vid_duration or 8.0
+                console.print(f"  [yellow]⊘[/yellow] No voiceover — cleaning video (threshold={clean_threshold}%), stripping audio")
+                cleaned_output = temp_dir / f"cleaned_{item_path.stem}.mp4"
+                try:
+                    from ..processing.video_cleaner import clean_video as _clean
+                    cleaned_path, segments = _clean(item_path, cleaned_output, threshold=clean_threshold, remove_shaky=remove_shaky, shake_threshold=shake_threshold)
+                    console.print(f"  [green]✓[/green] Cleaned: {cleaned_path.name}")
+                except Exception as e:
+                    console.print(f"  [yellow]⚠[/yellow] Cleaning failed, using original: {e}")
+                    cleaned_path = item_path
+                # Strip audio
+                import subprocess as _sp
+                muted_path = temp_dir / f"muted_{item_path.stem}.mp4"
+                try:
+                    res = _sp.run(
+                        ["ffmpeg", "-y", "-i", str(cleaned_path),
+                         "-an", "-c:v", "copy", str(muted_path)],
+                        capture_output=True, text=True, timeout=120
+                    )
+                    if res.returncode == 0:
+                        cleaned_path = muted_path
+                        console.print(f"  [green]✓[/green] Stripped audio")
+                except Exception:
+                    pass
+                try:
+                    vid_duration = get_duration(cleaned_path)
+                except Exception:
+                    vid_duration = original_vid_duration or 8.0
                 scenes.append(SceneData(
                     image_path=item_path,
                     script="",
-                    video_path=item_path,
+                    video_path=cleaned_path,
                     duration=vid_duration,
                     is_video=True,
-                    preserve_audio=True,
                 ))
                 continue
 
@@ -2347,7 +2402,7 @@ def create_marketing_video_veo(
             # Clean video (remove still frames) — after transcription so no speech is lost
             cleaned_output = temp_dir / f"cleaned_{item_path.stem}.mp4"
             try:
-                cleaned_path, segments = clean_video(item_path, cleaned_output)
+                cleaned_path, segments = clean_video(item_path, cleaned_output, threshold=clean_threshold, remove_shaky=remove_shaky, shake_threshold=shake_threshold)
                 console.print(f"  [green]✓[/green] Cleaned: {cleaned_path.name}")
             except Exception as e:
                 console.print(f"  [yellow]⚠[/yellow] Cleaning failed, using original: {e}")
@@ -2400,9 +2455,17 @@ def create_marketing_video_veo(
                     scenes.append(pair_scene)
                     break
 
+    # When no_voiceover is set globally, mark all video scenes as skip-voiceover
+    if no_voiceover:
+        console.print(f"[yellow]--no-voiceover: skipping transcription, scripts, and TTS for all scenes[/yellow]")
+        for scene in scenes:
+            if scene.is_video:
+                scene.preserve_audio = True
+                scene.script = ""
+
     # Step 1a: Extract text (OCR) from each static image
     static_scenes = [s for s in scenes if not s.is_video]
-    if static_scenes:
+    if static_scenes and not no_voiceover:
         console.print(f"\n[bold cyan]Step 1a: Extracting text from {len(static_scenes)} images (OCR)...[/bold cyan]")
 
         with Progress(
@@ -2439,7 +2502,7 @@ def create_marketing_video_veo(
                 progress.advance(task)
 
     # Step 1b: Assign scripts to scenes (pitch was already generated after shortlisting)
-    if len(scenes) > 0:
+    if len(scenes) > 0 and not no_voiceover:
         if pitch_script:
             # Split by line breaks — each line of the pitch = one scene
             pitch_lines = [s.strip() for s in pitch_script.strip().split("\n") if s.strip()]
@@ -2516,51 +2579,54 @@ def create_marketing_video_veo(
         console.print("\n[bold cyan]Step 2: No static images — skipping Veo generation[/bold cyan]")
 
     # Step 3: Generate voiceovers
-    console.print("\n[bold cyan]Step 3: Generating voiceovers...[/bold cyan]")
+    if no_voiceover:
+        console.print("\n[bold cyan]Step 3: Skipped (--no-voiceover)[/bold cyan]")
+    else:
+        console.print("\n[bold cyan]Step 3: Generating voiceovers...[/bold cyan]")
 
-    with Progress(
-        SpinnerColumn(),
-        TextColumn("[progress.description]{task.description}"),
-        BarColumn(),
-        console=console
-    ) as progress:
-        task = progress.add_task("Recording...", total=len(scenes))
+        with Progress(
+            SpinnerColumn(),
+            TextColumn("[progress.description]{task.description}"),
+            BarColumn(),
+            console=console
+        ) as progress:
+            task = progress.add_task("Recording...", total=len(scenes))
 
-        for i, scene in enumerate(scenes):
-            progress.update(task, description=f"Recording voiceover {i+1}/{len(scenes)}...")
+            for i, scene in enumerate(scenes):
+                progress.update(task, description=f"Recording voiceover {i+1}/{len(scenes)}...")
 
-            # Skip TTS if scene has no script (e.g. video with failed transcription)
-            if not scene.script or not scene.script.strip():
-                console.print(f"  [dim]Skipping voiceover {i+1}: no script[/dim]")
+                # Skip TTS if scene has no script (e.g. video with failed transcription)
+                if not scene.script or not scene.script.strip():
+                    console.print(f"  [dim]Skipping voiceover {i+1}: no script[/dim]")
+                    progress.advance(task)
+                    continue
+
+                audio_output = temp_dir / f"voiceover_{i:03d}.mp3"
+
+                try:
+                    # Enhance script with TTS delivery cues (emphasis, pauses, energy)
+                    tts_script = enhance_script_for_tts(scene.script)
+                    word_count = len(tts_script.split())
+                    console.print(f"  [dim]Scene {i+1} TTS input ({word_count} words): \"{tts_script[:80]}...\"[/dim]")
+                    if word_count < 13:
+                        console.print(f"  [yellow]⚠[/yellow] Scene {i+1} script too short ({word_count} words) — TTS may be under 6s")
+                    audio_path, tts_duration = generate_voiceover(
+                        tts_script,
+                        audio_output,
+                        engine=tts_engine,
+                        voice=voice,
+                        speed=voice_speed,
+                    )
+                    scene.audio_path = audio_path
+                    # For video scenes, keep the original video duration
+                    if not scene.is_video:
+                        scene.duration = tts_duration
+                    console.print(f"  [green]✓[/green] Voiceover {i+1}: {tts_duration:.1f}s ({word_count} words)")
+                except Exception as e:
+                    console.print(f"  [yellow]⚠[/yellow] TTS failed: {e}")
+                    scene.audio_path = None
+
                 progress.advance(task)
-                continue
-
-            audio_output = temp_dir / f"voiceover_{i:03d}.mp3"
-
-            try:
-                # Enhance script with TTS delivery cues (emphasis, pauses, energy)
-                tts_script = enhance_script_for_tts(scene.script)
-                word_count = len(tts_script.split())
-                console.print(f"  [dim]Scene {i+1} TTS input ({word_count} words): \"{tts_script[:80]}...\"[/dim]")
-                if word_count < 13:
-                    console.print(f"  [yellow]⚠[/yellow] Scene {i+1} script too short ({word_count} words) — TTS may be under 6s")
-                audio_path, tts_duration = generate_voiceover(
-                    tts_script,
-                    audio_output,
-                    engine=tts_engine,
-                    voice=voice,
-                    speed=voice_speed,
-                )
-                scene.audio_path = audio_path
-                # For video scenes, keep the original video duration
-                if not scene.is_video:
-                    scene.duration = tts_duration
-                console.print(f"  [green]✓[/green] Voiceover {i+1}: {tts_duration:.1f}s ({word_count} words)")
-            except Exception as e:
-                console.print(f"  [yellow]⚠[/yellow] TTS failed: {e}")
-                scene.audio_path = None
-
-            progress.advance(task)
 
     # Step 4: Combine videos with voiceovers
     console.print("\n[bold cyan]Step 4: Combining video and audio...[/bold cyan]")
@@ -2689,6 +2755,20 @@ def create_marketing_video_veo(
         except Exception as e:
             console.print(f"  [yellow]⚠[/yellow] Bookend generation failed: {e}")
 
+    # Step 4.6: Insert user-provided intro/outro videos
+    if intro_video_paths:
+        for i, ivp in enumerate(reversed(intro_video_paths)):
+            if Path(ivp).exists():
+                intro_v = VideoFileClip(str(ivp))
+                final_clips.insert(0, intro_v)
+                console.print(f"  [green]✓[/green] Intro video {i+1} prepended ({intro_v.duration:.1f}s): {Path(ivp).name}")
+    if outro_video_paths:
+        for i, ovp in enumerate(outro_video_paths):
+            if Path(ovp).exists():
+                outro_v = VideoFileClip(str(ovp))
+                final_clips.append(outro_v)
+                console.print(f"  [green]✓[/green] Outro video {i+1} appended ({outro_v.duration:.1f}s): {Path(ovp).name}")
+
     # Step 5: Concatenate all scenes using FFmpeg (much faster than MoviePy)
     console.print("\n[bold cyan]Step 5: Creating final video...[/bold cyan]")
 
@@ -2713,16 +2793,49 @@ def create_marketing_video_veo(
         src = Path(clip_path_attr)
         norm_path = temp_dir / f"norm_{idx:03d}.mp4"
 
-        # Scale + pad to target resolution, normalize audio to stereo 44.1kHz
-        cmd = [
-            "ffmpeg", "-y", "-i", str(src),
-            "-vf", f"scale={target_w}:{target_h}:force_original_aspect_ratio=decrease,pad={target_w}:{target_h}:(ow-iw)/2:(oh-ih)/2:black",
-            "-c:v", "libx264", "-preset", "ultrafast", "-crf", "18",
-            "-r", "30",
-            "-c:a", "aac", "-b:a", "192k", "-ar", "44100", "-ac", "2",
-            "-shortest",
-            str(norm_path)
+        # Check if source has an audio stream
+        probe_cmd = [
+            "ffprobe", "-v", "error", "-select_streams", "a",
+            "-show_entries", "stream=index", "-of", "csv=p=0", str(src)
         ]
+        probe_r = subprocess.run(probe_cmd, capture_output=True, text=True)
+        has_audio = bool(probe_r.stdout.strip())
+
+        # Build video filter: scale + pad, optionally speed up
+        vf = f"scale={target_w}:{target_h}:force_original_aspect_ratio=decrease,pad={target_w}:{target_h}:(ow-iw)/2:(oh-ih)/2:black"
+        if video_speed != 1.0:
+            vf += f",setpts={1.0/video_speed}*PTS"
+
+        # Audio filter for speed (pitch-corrected)
+        af = f"atempo={video_speed}" if video_speed != 1.0 and has_audio else None
+
+        # Scale + pad to target resolution, add silent audio if missing
+        if has_audio:
+            cmd = [
+                "ffmpeg", "-y", "-i", str(src),
+                "-vf", vf,
+                "-c:v", "libx264", "-preset", "ultrafast", "-crf", "18",
+                "-r", "30",
+            ]
+            if af:
+                cmd += ["-af", af]
+            cmd += [
+                "-c:a", "aac", "-b:a", "192k", "-ar", "44100", "-ac", "2",
+                "-shortest",
+                str(norm_path)
+            ]
+        else:
+            # No audio — generate silent audio track so concat works
+            cmd = [
+                "ffmpeg", "-y", "-i", str(src),
+                "-f", "lavfi", "-i", "anullsrc=r=44100:cl=stereo",
+                "-vf", vf,
+                "-c:v", "libx264", "-preset", "ultrafast", "-crf", "18",
+                "-r", "30",
+                "-c:a", "aac", "-b:a", "192k", "-ar", "44100", "-ac", "2",
+                "-shortest",
+                str(norm_path)
+            ]
         try:
             result = subprocess.run(cmd, capture_output=True, text=True, timeout=300)
             if result.returncode == 0 and norm_path.exists():
@@ -2747,12 +2860,12 @@ def create_marketing_video_veo(
         raise ValueError("No clips were normalized")
 
     # Step 5b: Concatenate using FFmpeg concat demuxer (fast, no re-encode needed)
-    concat_list = temp_dir / "concat_list.txt"
+    concat_list = temp_dir.resolve() / "concat_list.txt"
     with open(concat_list, "w") as f:
         for p in normalized_paths:
-            f.write(f"file '{p}'\n")
+            f.write(f"file '{p.resolve()}'\n")
 
-    concat_output = temp_dir / "concat_output.mp4" if (music_path and Path(music_path).exists()) else output_path
+    concat_output = temp_dir.resolve() / "concat_output.mp4" if (music_path and Path(music_path).exists()) else output_path.resolve()
     concat_output.parent.mkdir(parents=True, exist_ok=True)
 
     cmd = [
@@ -2773,9 +2886,14 @@ def create_marketing_video_veo(
                 "-c:a", "aac", "-b:a", "192k",
                 str(concat_output)
             ]
-            subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+            result2 = subprocess.run(cmd, capture_output=True, text=True, timeout=600)
+            if result2.returncode != 0:
+                console.print(f"  [red]Re-encode also failed: {result2.stderr[-200:]}[/red]")
     except subprocess.TimeoutExpired:
         raise ValueError("FFmpeg concatenation timed out")
+
+    if not concat_output.exists():
+        raise ValueError(f"FFmpeg concatenation produced no output at {concat_output}")
 
     console.print(f"  [green]✓[/green] Concatenated {len(normalized_paths)} clips")
 
@@ -2797,7 +2915,10 @@ def create_marketing_video_veo(
         except Exception as e:
             console.print(f"[yellow]⚠ Could not save music file: {e}[/yellow]")
 
-    console.print(f"  [green]✓[/green] Final video created")
+    if output_path.exists():
+        console.print(f"  [green]✓[/green] Final video created: {output_path.absolute()}")
+    else:
+        raise ValueError(f"Final video not found at {output_path.absolute()}")
 
     # Save script to text file
     script_output_path = output_path.with_suffix('.txt')
@@ -2819,13 +2940,17 @@ def create_marketing_video_veo(
     except Exception as e:
         console.print(f"[yellow]⚠[/yellow] Script save failed: {e}")
 
-    # Extract audio as separate file
-    audio_output_path = output_path.with_suffix('.mp3')
-    try:
-        _extract_final_audio(output_path, audio_output_path)
-    except Exception as e:
-        console.print(f"[yellow]⚠ Audio extraction failed: {e}[/yellow]")
-        audio_output_path = None
+    # Extract audio as separate file (skip if no voiceover was generated)
+    audio_output_path = None
+    if not no_voiceover:
+        audio_output_path = output_path.with_suffix('.mp3')
+        try:
+            _extract_final_audio(output_path, audio_output_path)
+        except Exception as e:
+            console.print(f"[yellow]⚠ Audio extraction failed: {e}[/yellow]")
+            audio_output_path = None
+    else:
+        console.print(f"[dim]Skipping audio extraction (--no-voiceover)[/dim]")
 
     # Save manifest for post-processing
     pre_music_video = temp_dir / "with_music.mp4" if (music_path and Path(music_path).exists()) else None
@@ -2837,6 +2962,29 @@ def create_marketing_video_veo(
         music_volume=music_volume,
         voice_speed=voice_speed,
     )
+
+    # Step 6 (optional): Burn karaoke captions
+    if captions and output_path.exists():
+        console.print("\n[bold cyan]Step 6: Burning karaoke captions...[/bold cyan]")
+        try:
+            from ..ai.tts_engine import transcribe_elevenlabs
+            from ..processing.caption_renderer import burn_captions_onto_video
+
+            transcript = transcribe_elevenlabs(output_path)
+            if transcript.words:
+                word_dicts = [
+                    {"text": w.text, "start": w.start, "end": w.end}
+                    for w in transcript.words
+                ]
+                captioned_path = output_path.with_name(output_path.stem + "_captioned.mp4")
+                burn_captions_onto_video(output_path, word_dicts, captioned_path)
+                if captioned_path.exists():
+                    shutil.move(str(captioned_path), str(output_path))
+                    console.print(f"  [green]✓[/green] Captions burned ({len(transcript.words)} words)")
+            else:
+                console.print("  [yellow]No words detected, skipping captions[/yellow]")
+        except Exception as e:
+            console.print(f"  [yellow]Caption burn failed: {e}[/yellow]")
 
     # Calculate total duration
     total_duration = sum(s.duration for s in scenes if s.duration)
@@ -2854,7 +3002,8 @@ def create_marketing_video_veo(
         f"⏱️  Duration: {total_duration:.1f}s\n"
         f"{scenes_summary}\n"
         f"🎤 Voice: {voice}\n"
-        f"🎵 Music: {'Yes' if music_path else 'No'}",
+        f"🎵 Music: {'Yes' if music_path else 'No'}\n"
+        f"📝 Captions: {'Yes' if captions else 'No'}",
         border_style="green"
     ))
 

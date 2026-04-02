@@ -643,7 +643,7 @@ def music(output: str, prompt: str, duration: int, engine: str):
 @click.option("--voice-speed", default=1.0, type=float, help="Voice speed (1.0=normal, 1.2=20%% faster)")
 @click.option("--mix", default=None, metavar="SPEED,VOICE_VOL,MUSIC_VOL",
               help="Compact audio mix shorthand: voice-speed,voice-volume,music-volume (e.g., '1.2,6.0,0.04'). Overrides individual --voice-speed, --voice-volume, --music-volume.")
-@click.option("--style", type=click.Choice(["marketing", "feature-explainer", "tutorial-explainer"]),
+@click.option("--style", type=click.Choice(["marketing", "feature-explainer", "tutorial-explainer", "instagram-shorts"]),
               default="marketing", help="Video style: marketing (persuasive pitch), feature-explainer (product feature walkthrough), tutorial-explainer (step-by-step educational)")
 @click.option("--context", default="", help="Product/service context for better scripts")
 @click.option("--product", default="", help="Product name for script generation")
@@ -655,7 +655,15 @@ def music(output: str, prompt: str, duration: int, engine: str):
 # Bookends (optional)
 @click.option("--intro/--no-intro", default=False, help="Generate branded intro frame (3 options to pick from)")
 @click.option("--outro/--no-outro", default=False, help="Generate branded outro/CTA frame (3 options to pick from)")
+@click.option("--intro-video", type=click.Path(exists=True), multiple=True, help="Pre-made intro video(s) to prepend (repeatable, played in order)")
+@click.option("--outro-video", type=click.Path(exists=True), multiple=True, help="Pre-made outro video(s) to append (repeatable, played in order)")
 # Behavior
+@click.option("--no-voiceover", is_flag=True, help="Skip transcription and TTS entirely — keep original audio on all files")
+@click.option("--clean-threshold", default=10.0, type=float, help="Motion threshold for still-frame removal (0-100). Higher = more aggressive. 10=near-identical, 50=50%+ similar (default: 10)")
+@click.option("--video-speed", default=1.0, type=float, help="Video playback speed multiplier (1.0=normal, 1.5=50%% faster, 2.0=double speed)")
+@click.option("--remove-shaky/--keep-shaky", default=False, help="Detect and remove shaky/jittery sections")
+@click.option("--shake-threshold", default=3.0, type=float, help="Shake sensitivity (lower = more aggressive, default: 3.0)")
+@click.option("--captions/--no-captions", default=False, help="Burn karaoke-style word-highlighted captions onto the video")
 @click.option("--storyline", default="", help="Narrative storyline to guide voiceover scripts and video animation prompts")
 @click.option("--storyline-file", type=click.Path(exists=True), help="Read storyline from a text file (avoids shell quoting issues)")
 @click.option("--dry-run", is_flag=True, help="Show execution plan without running anything")
@@ -694,6 +702,14 @@ def create(
     scene_duration: int,
     intro: bool,
     outro: bool,
+    intro_video: tuple,
+    outro_video: tuple,
+    no_voiceover: bool,
+    clean_threshold: float,
+    video_speed: float,
+    remove_shaky: bool,
+    shake_threshold: float,
+    captions: bool,
     storyline: str,
     storyline_file: Optional[str],
     dry_run: bool,
@@ -958,7 +974,10 @@ def create(
 
     # ── Phase 3: Video Pipeline (without generated music — added in Phase 4) ──
     console.print(f"\n[bold cyan]Phase 3: Creating Veo 3.1 marketing video...[/bold cyan]")
-    console.print(f"  Voice: [cyan]{effective_voice}[/cyan] ({tts_engine})")
+    if no_voiceover:
+        console.print(f"  Voice: [yellow]disabled (--no-voiceover)[/yellow]")
+    else:
+        console.print(f"  Voice: [cyan]{effective_voice}[/cyan] ({tts_engine})")
     console.print(f"  Music: [cyan]{effective_music_path or 'Deferred' if generate_music else 'None'}[/cyan]")
 
     try:
@@ -983,6 +1002,14 @@ def create(
             generate_intro=intro,
             generate_outro=outro,
             product=product,
+            no_voiceover=no_voiceover,
+            clean_threshold=clean_threshold,
+            video_speed=video_speed,
+            remove_shaky=remove_shaky,
+            shake_threshold=shake_threshold,
+            intro_video_paths=[Path(p) for p in intro_video] if intro_video else None,
+            outro_video_paths=[Path(p) for p in outro_video] if outro_video else None,
+            captions=captions,
         )
     except Exception as e:
         console.print(f"[red]Error creating video: {e}[/red]")
@@ -1812,7 +1839,7 @@ def blend(
 @click.option("--product", default="", help="Product/service name")
 @click.option("--context", default="", help="Additional product/service context")
 @click.option("--tone", default="professional and engaging", help="Script tone")
-@click.option("--style", type=click.Choice(["marketing", "feature-explainer", "tutorial-explainer"]),
+@click.option("--style", type=click.Choice(["marketing", "feature-explainer", "tutorial-explainer", "instagram-shorts"]),
               default="marketing", help="Video style profile")
 @click.option("--aspect-ratio", default="16:9", help="Aspect ratio for Imagen images (default: 16:9)")
 @click.option("--skip-imagen", is_flag=True, help="Skip AI image generation (screenshots only)")
@@ -2220,6 +2247,49 @@ def test_script(storyline: str, storyline_file: str, scenes: int, images: int, c
 
     console.print("\n" + "=" * 60)
     console.print(f"[bold]Total: {total_words} words, ~{round(total_words / 2.5)}s[/bold]")
+
+
+@cli.command("shorts")
+@click.argument("input_video", type=click.Path(exists=True))
+@click.option("-o", "--output", default="short.mp4", help="Output path")
+@click.option("--resolution", type=click.Choice(["720p", "1080p", "4k"]), default="1080p")
+@click.option("--captions/--no-captions", default=False, help="Burn karaoke captions")
+@click.option("--music/--no-music", default=True, help="Generate background music (default: on)")
+@click.option("--music-prompt", default="", help="Custom music prompt (auto-generated if empty)")
+@click.option("--music-volume", default=0.15, type=float, help="Background music volume (0.0-1.0, default: 0.15)")
+@click.option("--target-duration", default=45, type=int, help="Target duration in seconds (default: 45)")
+@click.option("--enhance/--no-enhance", default=True, help="AI scene enhancement with split-screen visuals (default: on)")
+def shorts(input_video: str, output: str, resolution: str, captions: bool, music: bool, music_prompt: str, music_volume: float, target_duration: int, enhance: bool):
+    """
+    Create an Instagram Short from a longer video.
+
+    \b
+    AI extracts the most impactful moments, trims and merges them
+    into a highlight reel with background music. Scene enhancement
+    generates split-screen or full-screen AI visuals to illustrate
+    what the speaker is describing.
+
+    \b
+    Examples:
+      python cli.py shorts long_video.mp4 -o short.mp4
+      python cli.py shorts interview.mov --captions --target-duration 40
+      python cli.py shorts talk.mp4 --music-prompt "lo-fi chill beats" --music-volume 0.2
+      python cli.py shorts talk.mp4 --no-enhance  # skip AI scene generation
+    """
+    from pathlib import Path
+    from src.pipeline.shorts_pipeline import create_instagram_short
+
+    create_instagram_short(
+        input_video=Path(input_video),
+        output_path=Path(output),
+        resolution=resolution,
+        captions=captions,
+        target_duration=target_duration,
+        generate_music=music,
+        music_prompt=music_prompt,
+        music_volume=music_volume,
+        enhance_scenes=enhance,
+    )
 
 
 @cli.command()
