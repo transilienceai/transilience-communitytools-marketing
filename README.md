@@ -115,29 +115,15 @@ python cli.py create ./content/ -o video.mp4 --dry-run
 
 ---
 
-## 🎬 Sample Output Videos
+## 🎬 Sample Videos
 
-### Marketing Video
-Full AI-generated marketing video — voiceover + music + Veo animation from mixed content (images, slides, recordings).
+| Sample | Description | Source |
+|--------|------------|--------|
+| [marketing.mp4](project/videogen/samples/video_samples/marketing.mp4) | Full marketing video — voiceover + music | Mixed content |
+| [feature_explainer.mp4](project/videogen/samples/video_samples/feature_explainer.mp4) | Product feature walkthrough | Screenshots |
+| [Vulnerability_tutorial.mp4](project/videogen/samples/video_samples/Vulnerability_tutorial.mp4) | Security vulnerability tutorial | Screen recording |
 
-https://github.com/user-attachments/assets/marketing.mp4
-
-<details>
-<summary>More samples</summary>
-
-### Feature Explainer
-Product feature walkthrough generated from screenshots.
-
-https://github.com/user-attachments/assets/feature_explainer.mp4
-
-### Security Tutorial
-Vulnerability tutorial generated from a screen recording with preserved system audio and AI voiceover.
-
-https://github.com/user-attachments/assets/vulnerability_tutorial.mp4
-
-</details>
-
-> **Note:** After cloning, sample videos are available at [`project/videogen/samples/video_samples/`](project/videogen/samples/video_samples/). To embed the videos above on GitHub, drag and drop the `.mp4` files into the README editor on github.com.
+> Clone the repo and open files locally to view, or download from GitHub.
 
 ---
 
