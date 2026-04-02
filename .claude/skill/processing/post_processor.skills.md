@@ -1,5 +1,7 @@
 # Post Processor — `src/processing/post_processor.py`
 
+## Description
+
 Video post-processing: speed adjustment, volume control, and audio remixing via FFmpeg.
 
 ## Functions

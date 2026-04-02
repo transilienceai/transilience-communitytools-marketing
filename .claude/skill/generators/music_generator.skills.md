@@ -1,5 +1,7 @@
 # Music Generator — `src/generators/music_generator.py`
 
+## Description
+
 AI background music generation with multiple engine support.
 
 ## Main Entry Point

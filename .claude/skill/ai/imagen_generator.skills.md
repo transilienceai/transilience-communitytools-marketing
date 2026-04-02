@@ -1,5 +1,7 @@
 # Imagen Generator — `src/ai/imagen_generator.py`
 
+## Description
+
 Google Imagen 4.0 image generation wrapper using the google-genai SDK.
 
 ## Functions

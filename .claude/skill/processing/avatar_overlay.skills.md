@@ -1,5 +1,7 @@
 # Avatar Overlay — `src/processing/avatar_overlay.py`
 
+## Description
+
 FFmpeg-based avatar compositing — overlays an image or video avatar on a corner of a video.
 
 ## Functions

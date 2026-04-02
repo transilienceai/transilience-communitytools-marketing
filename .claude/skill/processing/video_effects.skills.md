@@ -1,5 +1,7 @@
 # Video Effects — `src/processing/video_effects.py`
 
+## Description
+
 Cinematic effects including zoom, pan, color grading, transitions using FFmpeg.
 
 ## Functions

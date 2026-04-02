@@ -1,5 +1,7 @@
 # AI Analyzer — `src/ai/ai_analyzer.py`
 
+## Description
+
 AI Vision analysis and marketing script generation using Claude.
 
 ## Classes

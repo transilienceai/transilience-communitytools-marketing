@@ -1,5 +1,7 @@
 # Video Cleaner — `src/processing/video_cleaner.py`
 
+## Description
+
 Motion detection and still frame removal utilities.
 
 ## Functions

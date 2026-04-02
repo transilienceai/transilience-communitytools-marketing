@@ -1,5 +1,7 @@
 # Screenshot Handler — `src/pipeline/screenshot_handler.py`
 
+## Description
+
 Media file loading, sorting, and PowerPoint slide extraction.
 
 ## Classes

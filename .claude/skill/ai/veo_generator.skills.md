@@ -1,5 +1,7 @@
 # Veo Generator — `src/ai/veo_generator.py`
 
+## Description
+
 Google Veo 3.1 video generation from text prompts or images.
 
 ## Functions

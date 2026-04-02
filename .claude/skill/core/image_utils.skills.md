@@ -1,5 +1,7 @@
 # Image Utils — `src/core/image_utils.py`
 
+## Description
+
 Image processing, encoding, and dimension utilities for API integration.
 
 ## Functions

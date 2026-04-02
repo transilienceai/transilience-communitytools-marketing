@@ -1,5 +1,7 @@
 # Gemini Client — `src/ai/gemini_client.py`
 
+## Description
+
 Thin wrapper over the google-genai SDK for Gemini Vision and text generation (gemini-2.5-flash).
 
 ## Functions

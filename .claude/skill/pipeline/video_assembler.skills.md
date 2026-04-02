@@ -1,5 +1,7 @@
 # Video Assembler — `src/pipeline/video_assembler.py`
 
+## Description
+
 Stitches images/videos, adds captions, syncs audio, and overlays music into a final video.
 
 ## Classes

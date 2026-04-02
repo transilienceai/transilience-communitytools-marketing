@@ -1,5 +1,7 @@
 # Website Screenshotter — `src/pipeline/website_screenshotter.py`
 
+## Description
+
 Playwright-based website crawling and viewport screenshot capture.
 
 ## Data Classes

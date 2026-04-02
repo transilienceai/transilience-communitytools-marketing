@@ -1,5 +1,7 @@
 # Video Extractors — `src/processing/video_extractors.py`
 
+## Description
+
 Frame and keyframe extraction utilities using FFmpeg.
 
 ## Functions

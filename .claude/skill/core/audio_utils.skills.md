@@ -1,5 +1,7 @@
 # Audio Utils — `src/core/audio_utils.py`
 
+## Description
+
 Audio extraction, music overlay, and audio processing utilities.
 
 ## Functions

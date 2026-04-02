@@ -1,5 +1,7 @@
 # Storyboard Planner — `src/pipeline/storyboard_planner.py`
 
+## Description
+
 Gemini Vision scene planning from website screenshots + storyline.
 
 ## Data Classes

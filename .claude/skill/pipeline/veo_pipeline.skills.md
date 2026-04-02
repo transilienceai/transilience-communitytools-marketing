@@ -1,5 +1,7 @@
 # Veo Pipeline — `src/pipeline/veo_pipeline.py`
 
+## Description
+
 Main orchestrator. Complete marketing video pipeline using Google Veo 3.1 for high-quality video generation with Claude Vision analysis, TTS voiceover, and background music.
 
 ## Classes

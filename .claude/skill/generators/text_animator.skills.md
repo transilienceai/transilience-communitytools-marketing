@@ -1,5 +1,7 @@
 # Text Animator — `src/generators/text_animator.py`
 
+## Description
+
 Creates engaging animations with cursor movement, text highlighting, and zoom effects synced to voiceover audio. Uses Gemini Vision to detect text regions.
 
 ## Data Classes

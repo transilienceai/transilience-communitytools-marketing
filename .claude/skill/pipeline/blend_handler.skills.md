@@ -1,5 +1,7 @@
 # Blend Handler — `src/pipeline/blend_handler.py`
 
+## Description
+
 Scans folders recursively, optionally follows a sequence file, or uses Gemini Vision to determine optimal order, then outputs a numbered folder ready for `create`.
 
 ## Functions

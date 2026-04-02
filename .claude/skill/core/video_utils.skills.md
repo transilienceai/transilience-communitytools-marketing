@@ -1,5 +1,7 @@
 # Video Utils — `src/core/video_utils.py`
 
+## Description
+
 Core video metadata and probing utilities using ffprobe/ffmpeg.
 
 ## Functions

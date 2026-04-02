@@ -1,5 +1,7 @@
 # Bookend Generator — `src/pipeline/bookend_generator.py`
 
+## Description
+
 Generates branded intro and outro frames for marketing videos. Creates 3 options each using Gemini (creative direction) + Imagen 4.0 (image generation), then animates the selected frame with Veo 3.1.
 
 ## Data Classes

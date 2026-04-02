@@ -1,5 +1,7 @@
 # TTS Engine — `src/ai/tts_engine.py`
 
+## Description
+
 Text-to-Speech and Speech-to-Text engine supporting Edge TTS (free), OpenAI TTS, and ElevenLabs with voice cloning and transcription.
 
 ## Classes
