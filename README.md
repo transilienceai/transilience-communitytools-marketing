@@ -10,7 +10,7 @@
 
 **AI-powered pipeline that turns any content into professional marketing videos — images, documents, presentations, videos, or website URLs — with voice cloning, AI music, and cinematic animation.**
 
-[🚀 Quick Start](#-quick-start) • [🏗️ Architecture](#%EF%B8%8F-architecture) • [📖 CLI Reference](#-cli-reference) • [🌐 Web UI](#-web-ui) • [💰 Pricing](#-cost--performance)
+[🚀 Quick Start](#-quick-start) • [🏗️ Architecture](#%EF%B8%8F-architecture) • [📖 CLI Reference](#-cli-reference) • [🌐 Web UI](#-web-ui) • [💰 Pricing](#-cost--performance) • [📚 Docs](https://demoforge.transilience.cloud/docs)
 
 </div>
 
@@ -469,13 +469,35 @@ video_generator/
 ├── .gitignore
 │
 ├── .claude/                               # Claude Code config
-│   ├── settings.local.json
-│   └── skill/                             # Skill files mirroring src/ modules
-│       ├── ai/                            #   *.skills.md per AI module
-│       ├── pipeline/                      #   *.skills.md per pipeline module
-│       ├── processing/                    #   *.skills.md per processing module
-│       ├── core/                          #   *.skills.md per core utility
-│       └── generators/                    #   *.skills.md per generator
+│   ├── settings.local.json                # Local Claude Code settings
+│   └── skill/                             # Skill files — per-module context for Claude Code
+│       ├── ai/                            # AI service wrappers
+│       │   ├── ai_analyzer.skills.md      #   Image analysis + script generation
+│       │   ├── gemini_client.skills.md    #   Gemini API (Vision, content gen)
+│       │   ├── imagen_generator.skills.md #   Imagen 4.0 text-to-image
+│       │   ├── tts_engine.skills.md       #   TTS, STT, voice cloning (ElevenLabs/Edge)
+│       │   └── veo_generator.skills.md    #   Veo 3.1 image-to-video animation
+│       ├── pipeline/                      # Orchestration & planning
+│       │   ├── veo_pipeline.skills.md     #   Main pipeline orchestrator
+│       │   ├── storyboard_planner.skills.md #  Gemini Vision scene planning
+│       │   ├── website_screenshotter.skills.md # Playwright website crawling
+│       │   ├── screenshot_handler.skills.md #  File loading, PPT/PDF extraction
+│       │   ├── blend_handler.skills.md    #   Multi-folder asset blending
+│       │   ├── bookend_generator.skills.md #   Intro/outro frame generation
+│       │   └── video_assembler.skills.md  #   FFmpeg normalize + concat
+│       ├── processing/                    # Video post-processing
+│       │   ├── avatar_overlay.skills.md   #   FFmpeg avatar compositing
+│       │   ├── video_cleaner.skills.md    #   Remove still/idle frames
+│       │   ├── video_effects.skills.md    #   Visual effects (zoom, pan, fade)
+│       │   ├── video_extractors.skills.md #   Keyframe extraction
+│       │   └── post_processor.skills.md   #   Post-processing pipeline
+│       ├── core/                          # Utility helpers
+│       │   ├── audio_utils.skills.md      #   Audio manipulation (mix, trim, fade)
+│       │   ├── image_utils.skills.md      #   Image manipulation (resize, crop)
+│       │   └── video_utils.skills.md      #   Video inspection (duration, codec)
+│       └── generators/                    # Content generators
+│           ├── music_generator.skills.md  #   AI music (ElevenLabs, Suno, Replicate)
+│           └── text_animator.skills.md    #   Text animation overlays
 │
 └── project/
     └── videogen/
@@ -544,6 +566,6 @@ export GOOGLE_PASSWORD="..."      # Optional — Auto sign-in for storyboard --l
 
 <div align="center">
 
-**Built by [Transilience AI](https://www.transilience.ai)**
+**Built by [Transilience AI](https://www.transilience.ai)** | [Documentation](https://demoforge.transilience.cloud/docs)
 
 </div>

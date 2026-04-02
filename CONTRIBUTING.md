@@ -56,9 +56,10 @@ Use clear, descriptive commit messages:
 - `feat: add support for PDF input files`
 - `docs: update API endpoint documentation`
 
-## Project Structure
+## Documentation
 
-See [CLAUDE.md](CLAUDE.md) for detailed architecture documentation.
+- **Architecture**: See [CLAUDE.md](CLAUDE.md) for detailed architecture documentation
+- **API Docs & Guides**: [https://demoforge.transilience.cloud/docs](https://demoforge.transilience.cloud/docs)
 
 ## Reporting Issues
 
